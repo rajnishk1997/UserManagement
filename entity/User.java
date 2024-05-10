@@ -12,8 +12,13 @@ public class User {
 
     private String userName;
     private String userFirstName;
+    private String userMiddleName;
     private String userLastName;
     private String userPassword;
+    private String userMobile;
+    private String userEmail;
+    private String UserDesignation;
+    private String userEmployeeId;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE",
@@ -34,19 +39,60 @@ public class User {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
-    }
+    public String getUserEmployeeId() {
+		return userEmployeeId;
+	}
+    
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+	public String getUserName() {
+		return userName;
+	}
 
-    public String getUserFirstName() {
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public void setUserEmployeeId(String userEmployeeId) {
+		this.userEmployeeId = userEmployeeId;
+	}
+
+	public String getUserFirstName() {
         return userFirstName;
     }
 
-    public void setUserFirstName(String userFirstName) {
+    public String getUserMiddleName() {
+		return userMiddleName;
+	}
+
+	public void setUserMiddleName(String userMiddleName) {
+		this.userMiddleName = userMiddleName;
+	}
+
+	public String getUserMobile() {
+		return userMobile;
+	}
+
+	public void setUserMobile(String userMobile) {
+		this.userMobile = userMobile;
+	}
+
+	public String getUserEmail() {
+		return userEmail;
+	}
+
+	public void setUserEmail(String userEmail) {
+		this.userEmail = userEmail;
+	}
+
+	public String getUserDesignation() {
+		return UserDesignation;
+	}
+
+	public void setUserDesignation(String userDesignation) {
+		UserDesignation = userDesignation;
+	}
+
+	public void setUserFirstName(String userFirstName) {
         this.userFirstName = userFirstName;
     }
 

@@ -1,7 +1,8 @@
 package com.optum.service;
 
+
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,9 +15,11 @@ import com.optum.dao.UserDao;
 import com.optum.entity.Permission;
 import com.optum.entity.Role;
 import com.optum.entity.User;
+import com.optum.exception.UserRegistrationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +29,8 @@ import java.util.Set;
 public class UserService {
 //	@Value("${permissions}")
 //    private String permissionsName;
+	
+	 private static final Logger logger = LogManager.getLogger(UserService.class);
 	
 	@Autowired
     private PermissionDao permissionRepository;
@@ -51,6 +56,8 @@ public class UserService {
 //	        }
 //		
 //	}
+    
+    
 
     @Transactional
     public void initRoleAndUser() {
@@ -85,54 +92,95 @@ public class UserService {
         
         //User 1 - Admin User
         User adminUser = new User();
-        adminUser.setUserName("admin123");
-        adminUser.setUserPassword(getEncodedPassword("admin@pass"));
-        adminUser.setUserFirstName("admin");
-        adminUser.setUserLastName("admin");
+        adminUser.setUserName("admin");
+        adminUser.setUserFirstName("admin1");
+        adminUser.setUserPassword(getEncodedPassword("admin"));
+        adminUser.setUserLastName("Sharma");
+        adminUser.setUserMobile("9656789056");
+        adminUser.setUserEmail("admin@gmail.com");
+        adminUser.setUserDesignation("CFO");
+        adminUser.setUserEmployeeId("E1941945");
         Set<Role> adminRoles = new HashSet<>();
         adminRoles.add(adminRole);
         adminUser.setRoles(adminRoles);
         userDao.save(adminUser);
         
-        
+        //User 1 - Admin User
+//        User adminUser2 = new User();
+//        adminUser2.setUserFirstName("admin1");
+//        adminUser2.setUserPassword(getEncodedPassword("admin1"));
+//        adminUser2.setUserLastName("Sharma");
+//        adminUser2.setUserMobile("9656559056");
+//        adminUser2.setUserEmail("admin1@gmail.com");
+//        adminUser2.setUserDesignation("CFO");
+//        adminUser2.setUserEmployeeId("E1941943");
+//        Set<Role> adminRoles1 = new HashSet<>();
+//        adminRoles1.add(adminRole);
+//        adminUser2.setRoles(adminRoles1);
+//        userDao.save(adminUser2);
 
-        User user = new User();
-        user.setUserName("raj123");
-        user.setUserPassword(getEncodedPassword("raj123"));
-        user.setUserFirstName("raj");
-        user.setUserLastName("sharma");
-        Set<Role> userRoles = new HashSet<>();
-        userRoles.add(userRole);
-        user.setRoles(userRoles);
-        userDao.save(user);
+//        User user = new User();
+//        user.setUserFirstName("raj");
+//        user.setUserPassword(getEncodedPassword("raj123"));
+//        user.setUserLastName("sharma");
+//        Set<Role> userRoles = new HashSet<>();
+//        userRoles.add(userRole);
+//        user.setRoles(userRoles);
+//        userDao.save(user);
     }
 
+    @Transactional
     public User registerNewUser(User user, Set<Permission> providedPermissions) {
-        // Retrieve existing roles from the database
-        Set<Role> userRoles = new HashSet<>();
-        Set<Permission> retrievedPermissions = new HashSet<>();
-        for (Role role : user.getRoles()) {
-            Role existingRole = roleDao.findByRoleName(role.getRoleName());
-            if (existingRole != null) {
-                userRoles.add(existingRole);
-                retrievedPermissions.addAll(existingRole.getPermissions());
-            } else {
-                throw new IllegalArgumentException("Role '" + role.getRoleName() + "' not found");
+    	try {
+            // Null checks
+            if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
+                throw new IllegalArgumentException("Invalid user data");
             }
+
+         // Retrieve existing roles from the database
+            Set<Role> userRoles = new HashSet<>();
+            Role userRole = new Role();
+         
+            for (Role role : user.getRoles()) {
+                
+                // Find the existing role by name
+                Role existingRole = roleDao.findByRoleName(role.getRoleName());
+                if (existingRole != null) {
+                    // Use the existing role from the database and associate it with the user
+                	// Set permissions for the user role
+                    if (providedPermissions != null && !providedPermissions.isEmpty()) {
+                        // Only add the provided permissions to the user role
+                        userRole.setPermissions(new HashSet<>(providedPermissions));
+                    }
+                    userRoles.add(existingRole);
+                } else {
+                    throw new IllegalArgumentException("Role '" + role.getRoleName() + "' not found");
+                }
+            }
+
+            // Set the roles for the user
+            user.setRoles(userRoles);
+
+            // Set encoded password for the user
+            user.setUserPassword(getEncodedPassword(user.getUserPassword()));
+
+            // Save the user with the modified roles
+            return userDao.save(user);
+        } catch (IllegalArgumentException e) {
+            // Log the error
+            logger.error("Error registering new user: " + e.getMessage());
+            // Rethrow the exception
+            throw e;
+        } catch (Exception e) {
+            // Log the error
+            logger.error("An error occurred while registering the user", e);
+            // Wrap the exception in a custom application exception and rethrow
+            throw new UserRegistrationException("An error occurred while registering the user", e);
         }
-
-        // Associate permissions with the user roles
-        userRoles.forEach(role -> role.setPermissions(retrievedPermissions));
-
-        // Set the roles for the user
-        user.setRoles(userRoles);
-
-        // Set encoded password for the user
-        user.setUserPassword(getEncodedPassword(user.getUserPassword()));
-
-        // Save the user with the existing roles and permissions
-        return userDao.save(user);
     }
+
+
+
 
     public String getEncodedPassword(String password) {
         return passwordEncoder.encode(password);
@@ -143,7 +191,7 @@ public class UserService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             // Update the user fields here
-            user.setUserFirstName(updatedUser.getUserFirstName());
+          //  user.setUserFirstName(updatedUser.getUserFirstName());
             user.setUserLastName(updatedUser.getUserLastName());
             user.setUserPassword(getEncodedPassword(updatedUser.getUserPassword()));
             user.setRoles(updatedUser.getRoles());

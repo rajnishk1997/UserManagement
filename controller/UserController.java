@@ -18,6 +18,7 @@ import com.optum.dao.ReqRes;
 import com.optum.entity.*;
 import com.optum.service.UserService;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,13 +42,17 @@ public class UserController {
     }
 
     @PostMapping({"/registerNewUser"})
-    @PreAuthorize("hasRole('Admin')")
+   // @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<ResponseWrapper<User>> registerNewUser(@RequestBody User user) {
         try {
-            Set<Permission> permissions = new HashSet<>();
-            for (Role role : user.getRoles()) {
-                permissions.addAll(role.getPermissions());
-            }
+        	 Set<Permission> permissions = new HashSet<>();
+        	 
+             for (Role role : user.getRoles()) {
+            	 Collection<Permission> rolePermissions = role.getPermissions();
+            	 if (rolePermissions != null && !rolePermissions.isEmpty()) {
+                 permissions.addAll(role.getPermissions());
+            	 }
+             }
             User registeredUser = userService.registerNewUser(user, permissions);
             ReqRes reqRes = new ReqRes(HttpStatus.CREATED.value(), "", "User registered successfully");
             return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseWrapper<>(registeredUser, reqRes));
