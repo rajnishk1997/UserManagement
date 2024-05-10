@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.Optional;
 
 import com.optum.dao.ReqRes;
 import com.optum.entity.*;
@@ -28,6 +29,11 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+//    @PostConstruct   
+//    public void initPermissions() {
+//    	userService.initPermissions();
+//    }
 
     @PostConstruct   //PostConstruct as I wish to run this code once the compilation is done.
     public void initRoleAndUser() {
@@ -117,21 +123,34 @@ public class UserController {
     }
     
     @PutMapping("/admin/update/{userName}")
-    public ResponseEntity<ResponseWrapper<ReqRes>> updateUser(@PathVariable String userName, @RequestBody User updatedUser) {
+    public ResponseEntity<ResponseWrapper<User>> updateUser(@PathVariable String userName, @RequestBody User updatedUser) {
         try {
-            java.util.Optional<ReqRes> optionalUser = userService.updateUserByUsername(userName, updatedUser);
-            if (optionalUser.isPresent()) {
-                ReqRes reqRes = new ReqRes(HttpStatus.OK.value(), "", "User updated successfully");
-                return ResponseEntity.ok(new ResponseWrapper<>(reqRes, reqRes));
+            ReqRes reqRes;
+            Optional<User> optionalUser = userService.updateUserByUsername(userName, updatedUser);
+            User user = null;
+			if (optionalUser.isPresent()) {
+                 user = optionalUser.get();
+                reqRes = new ReqRes(HttpStatus.OK.value(), "", "User updated successfully");
             } else {
-                ReqRes reqRes = new ReqRes(HttpStatus.NOT_FOUND.value(), "User not found", "");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseWrapper<>(reqRes, reqRes));
+                reqRes = new ReqRes(HttpStatus.NOT_FOUND.value(), "User not found", "");
             }
+            // Construct the ResponseWrapper and return ResponseEntity
+            ResponseWrapper<User> responseWrapper = new ResponseWrapper<>(user,reqRes);
+            return ResponseEntity.ok(responseWrapper);
         } catch (Exception e) {
+            // Handle exception and return internal server error response
             ReqRes reqRes = new ReqRes(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", "An error occurred while updating the user");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseWrapper<>(reqRes, reqRes));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+
+
+
+
+
+
+
 
     
     @DeleteMapping("/admin/delete/{userName}")

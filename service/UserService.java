@@ -1,6 +1,7 @@
 package com.optum.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ import java.util.Set;
 
 @Service
 public class UserService {
+//	@Value("${permissions}")
+//    private String permissionsName;
 	
 	@Autowired
     private PermissionDao permissionRepository;
@@ -35,19 +38,32 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+//    @Transactional
+//    public void initPermissions() {
+//		 List<String> permissionNames = Arrays.asList(permissionsName.split(", "));
+//	        for (String permissionName : permissionNames) {
+//	            Permission permission = permissionRepository.findByPermissionName(permissionName);
+//	            if (permission == null) {
+//	                permission = new Permission(permissionName);
+//	                permissionRepository.save(permission);
+//	            }
+//	        }
+//		
+//	}
 
     @Transactional
     public void initRoleAndUser() {
     	
-    	List<String> permissionNames = Arrays.asList("USER MANAGEMENT", "ACCESS MANAGEMENT","MASTER DATA","OTHER RULE SET","NETWORK PRICING TICKETS","OTHER TICKETS","SOT VALIDATION","UPLOAD SOT","DASHBOARD ACCESS","USER AUDIT" /* Add more permissions */);
-
-        for (String permissionName : permissionNames) {
-            Permission permission = permissionRepository.findByPermissionName(permissionName);
-            if (permission == null) {
-                permission = new Permission(permissionName);
-                permissionRepository.save(permission);
-            }
-        }
+//    	List<String> permissionNames = Arrays.asList("USER MANAGEMENT", "ACCESS MANAGEMENT","MASTER DATA","OTHER RULE SET","NETWORK PRICING TICKETS","OTHER TICKETS","SOT VALIDATION","UPLOAD SOT","DASHBOARD ACCESS","USER AUDIT" /* Add more permissions */);
+//
+//        for (String permissionName : permissionNames) {
+//            Permission permission = permissionRepository.findByPermissionName(permissionName);
+//            if (permission == null) {
+//                permission = new Permission(permissionName);
+//                permissionRepository.save(permission);
+//            }
+//        }
     	//Role 1- Admin
         Role adminRole = new Role();
         adminRole.setRoleName("Admin");
@@ -80,15 +96,15 @@ public class UserService {
         
         
 
-//        User user = new User();
-//        user.setUserName("raj123");
-//        user.setUserPassword(getEncodedPassword("raj@123"));
-//        user.setUserFirstName("raj");
-//        user.setUserLastName("sharma");
-//        Set<Role> userRoles = new HashSet<>();
-//        userRoles.add(userRole);
-//        user.setRole(userRoles);
-//        userDao.save(user);
+        User user = new User();
+        user.setUserName("raj123");
+        user.setUserPassword(getEncodedPassword("raj123"));
+        user.setUserFirstName("raj");
+        user.setUserLastName("sharma");
+        Set<Role> userRoles = new HashSet<>();
+        userRoles.add(userRole);
+        user.setRoles(userRoles);
+        userDao.save(user);
     }
 
     public User registerNewUser(User user, Set<Permission> providedPermissions) {
@@ -122,19 +138,19 @@ public class UserService {
         return passwordEncoder.encode(password);
     }
     
-    public Optional<ReqRes> updateUserByUsername(String userName, User updatedUser) {
+    public Optional<User> updateUserByUsername(String userName, User updatedUser) {
         Optional<User> optionalUser = userDao.findByUserName(userName);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             // Update the user fields here
             user.setUserFirstName(updatedUser.getUserFirstName());
             user.setUserLastName(updatedUser.getUserLastName());
-            user.setUserPassword(getEncodedPassword(user.getUserPassword()));
+            user.setUserPassword(getEncodedPassword(updatedUser.getUserPassword()));
             user.setRoles(updatedUser.getRoles());
             userDao.save(user);
-            return Optional.of(new ReqRes(HttpStatus.OK.value(), "", "User updated successfully"));
+            return Optional.of(user);
         } else {
-            return Optional.of(new ReqRes(HttpStatus.NOT_FOUND.value(), "User not found", ""));
+            return Optional.empty(); // User not found
         }
     }
     
@@ -173,5 +189,11 @@ public class UserService {
     public List<User> findByUserFirstName(String userFirstName) {
         return userDao.findByUserFirstName(userFirstName);
     }
+
+	public User getUserByUsername(String userName) {
+		Optional<User> optionalUser = userDao.findByUserName(userName);
+        return optionalUser.orElse(null);
+	}
+
 
 }
