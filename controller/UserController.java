@@ -94,13 +94,13 @@ public class UserController {
     // Method to match useCases:
     @GetMapping("/admin/get-all-users-case")
     public ResponseEntity<ResponseWrapper<List<User>>> getAllUsersCases(
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = true) String keyword) {
         try {
             List<User> userList;
-            if (keyword != null && !keyword.isEmpty()) {
-                userList = userService.searchUsersByKeyword(keyword);
-            } else {
+            if (keyword.isEmpty()) {
                 userList = userService.getAllUsers();
+            } else {
+                userList = userService.searchUsersByKeyword(keyword);
             }
 
             ReqRes reqRes;
@@ -114,6 +114,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 
     @GetMapping({"/forAdmin"})
     @PreAuthorize("hasRole('Admin')")
@@ -148,15 +149,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
-
-
-
-
-
-
-
-
     
     @DeleteMapping("/admin/delete/{userName}")
     @PreAuthorize("hasRole('Admin')")
