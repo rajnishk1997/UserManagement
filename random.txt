@@ -1,0 +1,50 @@
+iterating through the JSON array, extracting the values corresponding to keys "00001" and "00002", and then populating the String arrays planOfCode and planOfCodeValues. To ensure no duplicate values are added, you can use a set data structure. This code will create two string arrays planOfCode and planOfCodeValues containing unique values from the JSON array based on keys "00001" and "00002" respectively.
+
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.HashSet;
+import java.util.Set;
+
+public class Main {
+    public static void main(String[] args) {
+        String jsonStr = "[{\"00001\":\"RXBRSHA\",\"00002\":\"CVDOPSTORE\"},{\"00001\":\"RXBRSHA\",\"00002\":\"CVDTSTKIT\"},{\"00001\":\"RXBRSHA\",\"00002\":\"RXBRSHARIH\"},{\"00001\":\"RXBRSHA\",\"00002\":\"RXBRSHAS\"},{\"00001\":\"RXBRSHA\",\"00002\":\"RXBRSHAM\"},{\"00001\":\"RXBRSHA\",\"00002\":\"RXBRSHAR9\"},{\"00001\":\"RXBRSHB\",\"00002\":\"CVDOPSTORE\"},{\"00001\":\"RXBRSHB\",\"00002\":\"CVDTSTKIT\"},{\"00001\":\"RXBRSHB\",\"00002\":\"RXBRSHBRIH\"},{\"00001\":\"RXBRSHB\",\"00002\":\"RXBRSHBS\"},{\"00001\":\"RXBRSHB\",\"00002\":\"RXBRSHBM\"},{\"00001\":\"RXBRSHB\",\"00002\":\"RXBRSHBR9\"},{\"00001\":\"RXBRSHE\",\"00002\":\"CVDOPSTORE\"},{\"00001\":\"RXBRSHE\",\"00002\":\"CVDTSTKIT\"},{\"00001\":\"RXBRSHE\",\"00002\":\"RXBRSHERIH\"},{\"00001\":\"RXBRSHE\",\"00002\":\"RXBRSHES\"},{\"00001\":\"RXBRSHE\",\"00002\":\"RXBRSHEM\"},{\"00001\":\"RXBRSHE\",\"00002\":\"RXBRSHER9\"},{\"00001\":\"RXBRSHF\",\"00002\":\"CVDTSTKIT\"},{\"00001\":\"RXBRSHF\",\"00002\":\"CVDOPSTORE\"},{\"00001\":\"RXBRSHF\",\"00002\":\"RXBRSHFRIH\"},{\"00001\":\"RXBRSHF\",\"00002\":\"RXBRSHFS\"},{\"00001\":\"RXBRSHF\",\"00002\":\"RXBRSHFM\"},{\"00001\":\"RXBRSHF\",\"00002\":\"RXBRSHFR9\"},{\"00001\":\"RXBRSHG\",\"00002\":\"CVDTSTKIT\"},{\"00001\":\"RXBRSHG\",\"00002\":\"CVDOPSTORE\"},{\"00001\":\"RXBRSHG\",\"00002\":\"RXBRSHGIH\"},{\"00001\":\"RXBRSHG\",\"00002\":\"RXBRSHGS\"},{\"00001\":\"RXBRSHG\",\"00002\":\"RXBRSHGM\"},{\"00001\":\"RXBRSHG\",\"00002\":\"RXBRSHGR9\"},{\"00001\":\"RXBRSHG\",\"00002\":\"RXBRSHG\"},{\"00001\":\"RXBRSHH\",\"00002\":\"CVDOPSTORE\"},{\"00001\":\"RXBRSHH\",\"00002\":\"CVDTSTKIT\"},{\"00001\":\"RXBRSHH\",\"00002\":\"RXBRSHHIH\"},{\"00001\":\"RXBRSHH\",\"00002\":\"RXBRSHHS\"},{\"00001\":\"RXBRSHH\",\"00002\":\"RXBRSHHM\"},{\"00001\":\"RXBRSHH\",\"00002\":\"RXBRSHHR9\"},{\"00001\":\"RXBRSHH\",\"00002\":\"RXBRSHH\"}]";
+
+        // Parse JSON array
+        JSONArray jsonArray = new JSONArray(jsonStr);
+
+        // Set to store unique values
+        Set<String> planOfCodeSet = new HashSet<>();
+        Set<String> planOfCodeValuesSet = new HashSet<>();
+
+        // Iterate through JSON array
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            String planOfCode = jsonObject.getString("00001");
+            String planOfCodeValue = jsonObject.getString("00002");
+            
+            // Add to sets if not already present
+            if (!planOfCodeSet.contains(planOfCode)) {
+                planOfCodeSet.add(planOfCode);
+            }
+            if (!planOfCodeValuesSet.contains(planOfCodeValue)) {
+                planOfCodeValuesSet.add(planOfCodeValue);
+            }
+        }
+
+        // Convert sets to arrays
+        String[] planOfCode = planOfCodeSet.toArray(new String[0]);
+        String[] planOfCodeValues = planOfCodeValuesSet.toArray(new String[0]);
+
+        // Print the arrays
+        System.out.println("Plan of Code:");
+        for (String code : planOfCode) {
+            System.out.println(code);
+        }
+
+        System.out.println("\nPlan of Code Values:");
+        for (String codeValue : planOfCodeValues) {
+            System.out.println(codeValue);
+        }
+    }
+}
