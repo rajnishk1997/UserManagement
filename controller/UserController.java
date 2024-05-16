@@ -1,5 +1,6 @@
 package com.optum.controller;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +15,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.optum.dao.ReqRes;
+import com.optum.dto.request.UserRequestDTO;
 import com.optum.entity.*;
 import com.optum.service.UserService;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -31,10 +36,8 @@ public class UserController {
     @Autowired
     private UserService userService;
     
-//    @PostConstruct   
-//    public void initPermissions() {
-//    	userService.initPermissions();
-//    }
+    @Autowired
+    private ModelMapper modelMapper;
 
     @PostConstruct   //PostConstruct as I wish to run this code once the compilation is done.
     public void initRoleAndUser() {
@@ -43,36 +46,55 @@ public class UserController {
 
     @PostMapping({"/registerNewUser"})
    // @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<ResponseWrapper<User>> registerNewUser(@RequestBody User user) {
+    public ResponseEntity<ResponseWrapper<User>> registerNewUser(@RequestBody UserRequestDTO userRequestDTO) {
         try {
-        	 Set<Permission> permissions = new HashSet<>();
-        	 
-             for (Role role : user.getRoles()) {
-            	 Collection<Permission> rolePermissions = role.getPermissions();
-            	 if (rolePermissions != null && !rolePermissions.isEmpty()) {
-                 permissions.addAll(role.getPermissions());
-            	 }
-             }
+            // Map UserRequestDTO to User entity
+            User user = modelMapper.map(userRequestDTO, User.class);
+
+            // Perform any additional mapping or processing if needed
+            // For example, mapping role name to Role entity
+           // Role role = new Role();
+          //  role.setRoleName(userRequestDTO.getRoleName());
+           // user.setRoles(Collections.singleton(role));
+
+            // You can map other nested DTOs similarly
+
+            // Set permissions for the user
+            Set<Permission> permissions = new HashSet<>();
+            for (Role role1 : user.getRoles()) {
+                Collection<Permission> rolePermissions = role1.getPermissions();
+                if (rolePermissions != null && !rolePermissions.isEmpty()) {
+                    permissions.addAll(rolePermissions);
+                }
+            }
+
+            // Call userService to register new user with permissions
             User registeredUser = userService.registerNewUser(user, permissions);
+
+            // Prepare response
             ReqRes reqRes = new ReqRes(HttpStatus.CREATED.value(), "", "User registered successfully");
             return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseWrapper<>(registeredUser, reqRes));
+        } catch (IllegalArgumentException e) {
+            // Specific handling for IllegalArgumentException
+            ReqRes reqRes = new ReqRes(HttpStatus.BAD_REQUEST.value(), "Bad Request", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseWrapper<>(null, reqRes));
         } catch (Exception e) {
+            // Generic handling for other exceptions
             ReqRes reqRes = new ReqRes(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", "An error occurred while registering the user");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseWrapper<>(null, reqRes));
         }
     }
-
     
     
     // Method to match exact user
     @GetMapping("/admin/get-all-users")
     public ResponseEntity<ResponseWrapper<List<User>>> getAllUsers(
-            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String userLastName,
             @RequestParam(required = false) String userFirstName) {
         try {
             List<User> userList;
-            if (userName != null) {
-                userList = userService.findByUserName(userName);
+            if (userLastName != null) {
+                userList = userService.findByUserLastName(userLastName);
             } else if (userFirstName != null) {
                 userList = userService.findByUserFirstName(userFirstName);
             } else {
@@ -97,7 +119,7 @@ public class UserController {
             @RequestParam(required = true) String keyword) {
         try {
             List<User> userList;
-            if (keyword.isEmpty()) {
+            if (keyword == null || keyword.isEmpty()) {
                 userList = userService.getAllUsers();
             } else {
                 userList = userService.searchUsersByKeyword(keyword);
@@ -129,10 +151,10 @@ public class UserController {
     }
     
     @PutMapping("/admin/update/{userName}")
-    public ResponseEntity<ResponseWrapper<User>> updateUser(@PathVariable String userName, @RequestBody User updatedUser) {
+    public ResponseEntity<ResponseWrapper<User>> updateUser(@PathVariable Integer userId, @RequestBody User updatedUser) {
         try {
             ReqRes reqRes;
-            Optional<User> optionalUser = userService.updateUserByUsername(userName, updatedUser);
+            Optional<User> optionalUser = userService.updateUserByUserId(userId, updatedUser);
             User user = null;
 			if (optionalUser.isPresent()) {
                  user = optionalUser.get();
@@ -152,9 +174,9 @@ public class UserController {
     
     @DeleteMapping("/admin/delete/{userName}")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<ResponseWrapper<ReqRes>> deleteUser(@PathVariable String userName) {
+    public ResponseEntity<ResponseWrapper<ReqRes>> deleteUser(@PathVariable Integer userId) {
         try {
-            java.util.Optional<ReqRes> optionalReqRes = userService.deleteUserByUsername(userName);
+            java.util.Optional<ReqRes> optionalReqRes = userService.deleteUserByUserId(userId);
             if (optionalReqRes.isPresent()) {
                 ReqRes reqRes = optionalReqRes.get();
                 return ResponseEntity.ok(new ResponseWrapper<>(reqRes, reqRes));

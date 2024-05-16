@@ -10,7 +10,7 @@ import com.optum.entity.Role;
 public class RoleService {
 
     @Autowired
-    private RoleDao roleDao;
+    private RoleDao roleRepository;
 
     public Role createNewRole(Role role) {
     	// Extract roleName from the incoming Role object
@@ -19,6 +19,18 @@ public class RoleService {
         // Set the roleName to the incoming Role object (optional)
         role.setRoleName(roleName);
 
-        return roleDao.save(role);
+        return roleRepository.save(role);
+    }
+
+    public void updateRole(Integer id, Role role) {
+        Role existingRole = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Role not found"));
+        existingRole.setRoleName(role.getRoleName());
+        // Update other properties if needed
+        roleRepository.save(existingRole);
+    }
+
+    public void deleteRole(Integer id) {
+        Role existingRole = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Role not found"));
+        roleRepository.delete(existingRole);
     }
 }

@@ -1,42 +1,65 @@
 package com.optum.entity;
 
 import javax.persistence.*;
+
+import java.util.Date;
 import java.util.Set;
 
 @Entity
+@Table(name = "rx_user")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "u_rid")
+    private int userRid;
 
+    @Column(name = "u_username")
     private String userName;
+    @Column(name = "u_first_name")
     private String userFirstName;
+    @Column(name = "u_middle_name")
     private String userMiddleName;
+    @Column(name = "u_last_name")
     private String userLastName;
+    @Column(name = "u_full_name")
+    private String userFullName;
+    @Column(name = "u_password")
     private String userPassword;
+    @Column(name = "u_mobile")
     private String userMobile;
+    @Column(name = "u_email")
     private String userEmail;
+    @Column(name = "u_designation")
     private String UserDesignation;
+    @Column(name = "u_employee_id")
     private String userEmployeeId;
+    @Column(name = "u_roleName")
+    private String roleNames;
+    
+    @Column(name = "u_created_by")
+    private Integer createdBy;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "USER_ROLE",
-            joinColumns = {
-                    @JoinColumn(name = "USER_ID")
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "ROLE_ID")
-            }
-    )
+    @Column(name = "u_modified_by")
+    private Integer modifiedBy;
+
+    @Column(name = "u_create_datetime")
+    private Date createdDate;
+
+    @Column(name = "u_modify_datetime")
+    private Date modifiedDate;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Role> roles;
+    
+    private Integer currentUserId;
 
     public int getId() {
-        return id;
+        return userRid;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.userRid = id;
     }
 
     public String getUserEmployeeId() {
@@ -119,4 +142,69 @@ public class User {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
+	public int getUserRid() {
+		return userRid;
+	}
+
+	public void setUserRid(int userRid) {
+		this.userRid = userRid;
+	}
+
+	public String getUserFullName() {
+		return userFullName;
+	}
+
+	public void setUserFullName(String userFullName) {
+		this.userFullName = userFullName;
+	}
+
+	public String getRoleNames() {
+		return roleNames;
+	}
+
+	public void setRoleNames(String roleNames) {
+		this.roleNames = roleNames;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(Integer modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public Integer getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(Integer currentUserId) {
+		this.currentUserId = currentUserId;
+	}
+    
 }

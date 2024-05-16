@@ -4,72 +4,48 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 @Entity
-@Table(name = "rx_permission")
-public class Permission {
+@Table(name = "rx_user_role")
+public class UserRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "p_rid")
-    private int permissionRid;
+    @Column(name = "ur_rid")
+    private Integer userRoleRid;
     
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    
+    @Column(name = "u_rid")
+    private Integer userRid;
 
-    @Column(name = "p_permission_name")
-    private String permissionName;
-    
-    @Column(name = "p_created_by")
+    @Column(name = "r_rid")
+    private Integer roleRid;
+
+    @Column(name = "ur_created_by")
     private Integer createdBy;
 
-    @Column(name = "p_modified_by")
+    @Column(name = "ur_modified_by")
     private Integer modifiedBy;
 
-    @Column(name = "p_create_datetime")
+    @Column(name = "ur_create_datetime")
     private Date createdDate;
 
-    @Column(name = "p_modify_datetime")
+    @Column(name = "ur_modify_datetime")
     private Date modifiedDate;
 
-    
-    // Constructors
-    public Permission() {
-    }
-
-    public Permission(String permissionName) {
-        this.permissionName = permissionName;
-    }
-
-    // Getters and Setters
-    public int getId() {
-        return permissionRid;
-    }
-
-    public void setId(int id) {
-        this.permissionRid = id;
-    }
-
-    public String getPermissionName() {
-        return permissionName;
-    }
-
-    public void setPermissionName(String permissionName) {
-        this.permissionName = permissionName;
-    }
-
-	public int getPermissionRid() {
-		return permissionRid;
+	public Integer getId() {
+		return userRoleRid;
 	}
 
-	public void setPermissionRid(int permissionRid) {
-		this.permissionRid = permissionRid;
+	public void setId(Integer id) {
+		this.userRoleRid = id;
 	}
 
 	public Integer getCreatedBy() {
@@ -103,6 +79,31 @@ public class Permission {
 	public void setModifiedDate(Date modifiedDate) {
 		this.modifiedDate = modifiedDate;
 	}
+
+	public Integer getUserRoleRid() {
+		return userRoleRid;
+	}
+
+	public void setUserRoleRid(Integer userRoleRid) {
+		this.userRoleRid = userRoleRid;
+	}
+
+	public Integer getUserRid() {
+		return userRid;
+	}
+
+	public void setUserRid(Integer userRid) {
+		this.userRid = userRid;
+	}
+
+	public Integer getRoleRid() {
+		return roleRid;
+	}
+
+	public void setRoleRid(Integer roleRid) {
+		this.roleRid = roleRid;
+	}
     
     
 }
+
